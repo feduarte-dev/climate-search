@@ -1,5 +1,6 @@
 import { searchCities, getWeatherByCity } from './weatherAPI';
 
+const API_TOKEN = import.meta.env.VITE_TOKEN;
 /**
  * Cria um elemento HTML com as informações passadas
  */
@@ -24,9 +25,17 @@ function createForecast(forecast) {
   const dateElement = createElement('p', 'forecast-weekday', weekdayName);
 
   const maxElement = createElement('span', 'forecast-temp max', 'max');
-  const maxTempElement = createElement('span', 'forecast-temp max', `${maxTemp}º`);
+  const maxTempElement = createElement(
+    'span',
+    'forecast-temp max',
+    `${maxTemp}º`,
+  );
   const minElement = createElement('span', 'forecast-temp min', 'min');
-  const minTempElement = createElement('span', 'forecast-temp min', `${minTemp}º`);
+  const minTempElement = createElement(
+    'span',
+    'forecast-temp min',
+    `${minTemp}º`,
+  );
   const tempContainer = createElement('div', 'forecast-temp-container');
   tempContainer.appendChild(maxElement);
   tempContainer.appendChild(minElement);
@@ -78,7 +87,7 @@ export function showForecast(forecastList) {
  */
 export function createCityElement(cityInfo) {
   const cities = document.querySelector('#cities');
-  const { name, country, temp, condition, icon/* , url */ } = cityInfo;
+  const { name, country, temp, condition, icon, url } = cityInfo;
 
   const cityElement = createElement('li', 'city');
 
@@ -98,17 +107,29 @@ export function createCityElement(cityInfo) {
 
   const iconElement = createElement('img', 'condition-icon');
   iconElement.src = icon.replace('64x64', '128x128');
-
   const infoContainer = createElement('div', 'city-info-container');
   infoContainer.appendChild(tempContainer);
   infoContainer.appendChild(iconElement);
-
   const btn = createElement('button', 'btnWeather', 'Ver previsão');
-
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
   cityElement.appendChild(btn);
 
+  btn.addEventListener('click', async () => {
+    const FUTURE_API = `http://api.weatherapi.com/v1/forecast.json?lang=pt&key=${API_TOKEN}&q=${url}&days=7`;
+    const response = await fetch(FUTURE_API);
+    const data = await response.json();
+    const obj = data.forecast.forecastday.map((day) => ({
+      date: day.date,
+      maxTemp: day.day.maxtemp_c,
+      minTemp: day.day.mintemp_c,
+      condition: day.day.condition.text,
+      icon: day.day.condition.icon,
+    }));
+
+    showForecast(obj);
+  });
+  cityElement.appendChild(btn);
   cities.appendChild(cityElement);
   return cityElement;
 }
@@ -117,7 +138,6 @@ export function createCityElement(cityInfo) {
  * Lida com o evento de submit do formulário de busca
  */
 export async function handleSearch(event) {
-  const API_TOKEN = import.meta.env.VITE_TOKEN;
   event.preventDefault();
   clearChildrenById('cities');
 
@@ -126,14 +146,9 @@ export async function handleSearch(event) {
   await searchCities(searchValue);
   if (searchValue === 'Riacho de fevereiro') return;
   const cities = await searchCities(searchValue);
-  cities.map((city) => city.url)
+  cities
+    .map((city) => city.url)
     .forEach(async (link) => {
       createCityElement(await getWeatherByCity(link));
-      document.querySelector('.btnWeather').addEventListener('click', async () => {
-        const FUTURE_API = `http://api.weatherapi.com/v1/forecast.json?lang=pt&key=${API_TOKEN}&q=${link}&days=${7}`;
-        const result = await fetch(FUTURE_API);
-        const data = await result.json();
-        console.log(data);
-      });
     });
 }
