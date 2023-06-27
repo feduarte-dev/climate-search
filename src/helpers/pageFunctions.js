@@ -85,6 +85,7 @@ export function createCityElement(cityInfo) {
   const headingElement = createElement('div', 'city-heading');
   const nameElement = createElement('h2', 'city-name', name);
   const countryElement = createElement('p', 'city-country', country);
+
   headingElement.appendChild(nameElement);
   headingElement.appendChild(countryElement);
 
@@ -102,8 +103,12 @@ export function createCityElement(cityInfo) {
   infoContainer.appendChild(tempContainer);
   infoContainer.appendChild(iconElement);
 
+  const btn = createElement('button', 'btnWeather', 'Ver previsão');
+
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
+  cityElement.appendChild(btn);
+
   cities.appendChild(cityElement);
   return cityElement;
 }
@@ -112,6 +117,7 @@ export function createCityElement(cityInfo) {
  * Lida com o evento de submit do formulário de busca
  */
 export async function handleSearch(event) {
+  const API_TOKEN = import.meta.env.VITE_TOKEN;
   event.preventDefault();
   clearChildrenById('cities');
 
@@ -123,5 +129,11 @@ export async function handleSearch(event) {
   cities.map((city) => city.url)
     .forEach(async (link) => {
       createCityElement(await getWeatherByCity(link));
+      document.querySelector('.btnWeather').addEventListener('click', async () => {
+        const FUTURE_API = `http://api.weatherapi.com/v1/forecast.json?lang=pt&key=${API_TOKEN}&q=${link}&days=${7}`;
+        const result = await fetch(FUTURE_API);
+        const data = await result.json();
+        console.log(data);
+      });
     });
 }
