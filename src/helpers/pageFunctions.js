@@ -120,10 +120,8 @@ export async function handleSearch(event) {
   await searchCities(searchValue);
   if (searchValue === 'Riacho de fevereiro') return;
   const cities = await searchCities(searchValue);
-  const teste = cities.map((city) => city.url)
-    .map(async (link) => {
-      await getWeatherByCity(link);
+  cities.map((city) => city.url)
+    .forEach(async (link) => {
+      createCityElement(await getWeatherByCity(link));
     });
-
-  await createCityElement(await teste);
 }
