@@ -77,7 +77,8 @@ export function showForecast(forecastList) {
  * Recebe um objeto com as informações de uma cidade e retorna um elemento HTML
  */
 export function createCityElement(cityInfo) {
-  const { name, country, temp, condition, icon /* , url */ } = cityInfo;
+  const cities = document.querySelector('#cities');
+  const { name, country, temp, condition, icon/* , url */ } = cityInfo;
 
   const cityElement = createElement('li', 'city');
 
@@ -103,7 +104,7 @@ export function createCityElement(cityInfo) {
 
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
-
+  cities.appendChild(cityElement);
   return cityElement;
 }
 
@@ -119,6 +120,10 @@ export async function handleSearch(event) {
   await searchCities(searchValue);
   if (searchValue === 'Riacho de fevereiro') return;
   const cities = await searchCities(searchValue);
-  cities.map((city) => city.url)
-    .forEach((link) => getWeatherByCity(link));
+  const teste = cities.map((city) => city.url)
+    .map(async (link) => {
+      await getWeatherByCity(link);
+    });
+
+  await createCityElement(await teste);
 }
