@@ -144,7 +144,7 @@ export async function handleSearch(event) {
   const searchInput = document.getElementById('search-input');
   const searchValue = searchInput.value;
   await searchCities(searchValue);
-  if (searchValue === 'Riacho de fevereiro') return;
+
   const cities = await searchCities(searchValue);
   cities
     .map((city) => city.url)
